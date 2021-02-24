@@ -25,7 +25,7 @@ module MockHelpers
     begin
       result = reader.read_nonblock(1)
 
-      yield "http://#{host}:#{port}/"
+      yield "http://#{host}:#{port}"
     rescue IO::WaitReadable
       IO.select([reader])
       retry

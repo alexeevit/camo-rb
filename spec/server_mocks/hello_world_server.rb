@@ -1,6 +1,6 @@
 class HelloWorldServer
   def call(env)
-    return [200, {}, [<<~HTML.chomp]] if env['REQUEST_METHOD'] == 'GET'
+    return [200, { 'X-Custom-Header' => 'custom value' }, [<<~HTML.chomp]] if env['REQUEST_METHOD'] == 'GET'
       <!doctype html>
       <html>
         <head></head>

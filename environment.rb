@@ -1,7 +1,10 @@
 require 'rubygems'
 require 'bundler/setup'
 
-Bundler.setup(:default)
+groups = [:default]
+groups << 'test' if ENV['CAMORB_ENV'] == 'test'
+
+Bundler.setup(*groups)
 
 require 'pathname'
 lib_path ||= File.expand_path('../lib', Pathname.new(__FILE__).realpath)
