@@ -9,7 +9,7 @@ describe Camo::Client do
 
     it 'returns the body and headers of the resource' do
       mock_server('hello_world_server') do |uri|
-        body, headers = subject.get(uri)
+        status, headers, body = subject.get(uri)
         expect(body).to eq(<<~HTML.chomp)
           <!doctype html>\n<html>\n  <head></head>\n  <body>\n    <h1>Hello World!</h1>\n  </body>\n</html>
         HTML
