@@ -25,6 +25,21 @@ describe Camo::Server do
     ENV['CAMORB_KEY'] = @old_key
   end
 
+  context 'when the method is not GET' do
+    it 'returns 404' do
+      post '/'
+      expect(last_response.status).to eq(404)
+    end
+  end
+
+  context 'when url is not provided' do
+    it 'returns 400' do
+      get camo_url('')
+      expect(last_response.status).to eq(400)
+      expect(last_response.body).to eq('Empty URL')
+    end
+  end
+
   context 'when format is url' do
     it 'returns the content of the page' do
       mock_server('hello_world_server') do |uri|
@@ -83,28 +98,19 @@ describe Camo::Server do
     end
 
     context 'when digest is not provided' do
-      it 'returns 400' do
-        get "/#{encode_url('https://localhost:3000')}"
-
-        expect(last_response.status).to eq(400)
+      it 'returns 401' do
+        get "http://example.org//#{encode_url('https://localhost:3000')}"
+        expect(last_response.status).to eq(401)
+        expect(last_response.body).to eq('Invalid digest')
       end
     end
 
     context 'when digest is invalid' do
       it 'returns 401 with error message' do
         get "/digest/#{encode_url('https://localhost:3000')}"
-
         expect(last_response.status).to eq(401)
         expect(last_response.body).to eq('Invalid digest')
       end
-    end
-  end
-
-  context 'when url is not provided' do
-    it 'returns 400' do
-      get "/digest"
-
-      expect(last_response.status).to eq(400)
     end
   end
 end
