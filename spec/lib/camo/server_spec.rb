@@ -25,6 +25,35 @@ describe Camo::Server do
     ENV['CAMORB_KEY'] = @old_key
   end
 
+  it 'returns default, security, and custom headers' do
+    mock_server('hello_world_server') do |uri|
+      get camo_url(uri)
+
+      # default security headers
+      expect(last_response.headers).to include({
+        'X-Frame-Options' => "deny",
+        'X-XSS-Protection' => "1; mode=block",
+        'X-Content-Type-Options' => "nosniff",
+        'Content-Security-Policy' => "default-src 'none'; img-src data:; style-src 'unsafe-inline'",
+        'Strict-Transport-Security' => "max-age=31536000; includeSubDomains",
+      })
+
+      # default headers
+      expect(last_response.headers).to include({
+        'Camo-Host' => 'unknown',
+        'connection' => 'close',
+        'content-length' => '91',
+        'date' => 'Sat, 28 Sep 1996 00:00:00 GMT',
+        'server' => "WEBrick/1.4.2 (Ruby/2.6.6/2020-03-31)",
+      })
+
+      # custom remote server headers
+      expect(last_response.headers).to include({
+        'x-custom-header' => "custom value"
+      })
+    end
+  end
+
   context 'when the method is not GET' do
     it 'returns 404' do
       post '/'
@@ -49,13 +78,6 @@ describe Camo::Server do
         expect(last_response.body).to eq(<<~HTML.chomp)
           <!doctype html>\n<html>\n  <head></head>\n  <body>\n    <h1>Hello World!</h1>\n  </body>\n</html>
         HTML
-        expect(last_response.headers).to match({
-          'x-custom-header' => 'custom value',
-          'connection' => 'close',
-          'content-length' => '91',
-          'date' => 'Sat, 28 Sep 1996 00:00:00 GMT',
-          'server' => "WEBrick/1.4.2 (Ruby/2.6.6/2020-03-31)",
-        })
       end
     end
 
@@ -87,13 +109,6 @@ describe Camo::Server do
         expect(last_response.body).to eq(<<~HTML.chomp)
           <!doctype html>\n<html>\n  <head></head>\n  <body>\n    <h1>Hello World!</h1>\n  </body>\n</html>
         HTML
-        expect(last_response.headers).to match({
-          'x-custom-header' => 'custom value',
-          'connection' => 'close',
-          'content-length' => '91',
-          'date' => 'Sat, 28 Sep 1996 00:00:00 GMT',
-          'server' => "WEBrick/1.4.2 (Ruby/2.6.6/2020-03-31)",
-        })
       end
     end
 
