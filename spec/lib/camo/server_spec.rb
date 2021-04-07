@@ -1,35 +1,18 @@
 require 'spec_helper'
-require 'openssl'
 
 describe Camo::Server do
-  def camo_url(url, format: :path)
-    raise ArgumentError, 'Format argument must be :path (default) or :query' unless [:path, :query].include? format
-    hexdigest = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), ENV['CAMORB_KEY'], url)
-
-    return "/#{hexdigest}?url=#{url}" if format == :query
-    "/#{hexdigest}/#{encode_url(url)}"
-  end
-
-  def encode_url(url)
-    url.bytes.map { |byte| '%02x' % byte }.join
-  end
-
   before do
     Timecop.freeze(Time.utc(1996, 9, 28))
-    @old_key = ENV['CAMORB_KEY']
     ENV['CAMORB_KEY'] = 'somekey'
   end
 
-  after do
-    Timecop.return
-    ENV['CAMORB_KEY'] = @old_key
-  end
+  after { Timecop.return }
 
-  it 'returns default, security, and custom headers' do
+  it 'returns default and security headers' do
     mock_server('hello_world_server') do |uri|
       get camo_url(uri)
 
-      # default security headers
+      # security headers
       expect(last_response.headers).to include({
         'X-Frame-Options' => "deny",
         'X-XSS-Protection' => "1; mode=block",
@@ -45,11 +28,6 @@ describe Camo::Server do
         'content-length' => '91',
         'date' => 'Sat, 28 Sep 1996 00:00:00 GMT',
         'server' => "WEBrick/1.4.2 (Ruby/2.6.6/2020-03-31)",
-      })
-
-      # custom remote server headers
-      expect(last_response.headers).to include({
-        'x-custom-header' => "custom value"
       })
     end
   end
