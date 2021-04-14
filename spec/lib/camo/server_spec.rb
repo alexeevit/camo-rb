@@ -8,8 +8,9 @@ describe Camo::Server do
 
   after { Timecop.return }
 
-  it 'returns default and security headers' do
+  it 'returns custom camo headers, security headers, and allowed headers from remote' do
     mock_server('hello_world_server') do |uri|
+      header 'Accept-Encoding', 'gzip'
       get camo_url(uri)
 
       # security headers
@@ -21,13 +22,21 @@ describe Camo::Server do
         'Strict-Transport-Security' => "max-age=31536000; includeSubDomains",
       })
 
-      # default headers
+      # custom camo headers
       expect(last_response.headers).to include({
         'Camo-Host' => 'unknown',
-        'connection' => 'close',
-        'content-length' => '91',
-        'date' => 'Sat, 28 Sep 1996 00:00:00 GMT',
-        'server' => "WEBrick/1.4.2 (Ruby/2.6.6/2020-03-31)",
+      })
+
+      # allowed headers from remote
+      expect(last_response.headers).to include({
+        'content-type' => 'image/*',
+        'cache-control' => 'max-age=31536000',
+        'etag' => '33a64df551425fcc55e4d42a148795d9f25f89d4',
+        'expires' => 'Wed, 21 Oct 2021 07:28:00 GMT',
+        'last-modified' => 'Sat, 28 Sep 1996 00:00:00 GMT',
+        'content-length' => '92',
+        'transfer-encoding' => 'gzip',
+        'content-encoding' => 'gzip',
       })
     end
   end

@@ -11,11 +11,14 @@ module MockHelpers
       reader.close
       require_relative "../server_mocks/#{name}"
       server_class = Object.const_get(camelize(name.to_s.sub(/.*\./, ''.freeze)))
+
       builder = Rack::Builder.new do
+        use Rack::Deflater
         run server_class.new
       end
-      Rack::Handler.default.run(builder, Host: host, Port: port, Silent: true) do
-        writer.puts(1)
+
+      Rack::Handler.default.run(builder, Host: host, Port: port, Silent: false) do |server|
+        writer.puts(1) # signal that the server is up
       end
     end
 
@@ -23,7 +26,7 @@ module MockHelpers
     run_started = Time.now.to_i
 
     begin
-      result = reader.read_nonblock(1)
+      reader.read_nonblock(1) # start only when the server is up
 
       yield "http://#{host}:#{port}"
     rescue IO::WaitReadable

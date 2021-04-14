@@ -14,7 +14,7 @@ describe Camo::Request do
 
   let(:query) { '' }
   let(:path) { camo_url(url) }
-  let(:headers) { { 'Host' => 'camorb' } }
+  let(:headers) { { 'Host' => 'camorb', 'Accept-Encoding' => 'gzip' } }
   let(:url) { 'https://google.com' }
 
   describe '#initialize' do
@@ -46,7 +46,7 @@ describe Camo::Request do
 
     it 'fills method and headers' do
       expect(request.method).to eq('GET')
-      expect(request.headers).to eq('HOST' => 'camorb')
+      expect(request.headers).to eq('HOST' => 'camorb', 'ACCEPT_ENCODING' => 'gzip')
     end
   end
 

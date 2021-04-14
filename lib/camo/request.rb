@@ -29,9 +29,12 @@ module Camo
     private
 
     def build_headers(env)
-      env
-        .select { |k,_| k.start_with?('HTTP_') }
-        .each_with_object({}) { |header, headers| headers[header[0].sub('HTTP_', '')] = header[1] }
+      hash = env.select { |k,_| k.start_with?('HTTP_') }
+      hash = hash.each_with_object({}) do |header, headers|
+        headers[header[0].sub('HTTP_', '')] = header[1]
+      end
+
+      HeaderHash[hash]
     end
 
     def validate_request

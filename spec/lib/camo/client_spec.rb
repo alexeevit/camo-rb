@@ -15,11 +15,17 @@ describe Camo::Client do
         HTML
 
         expect(headers).to match({
-          'x-custom-header' => 'custom value',
           'connection' => 'close',
-          'content-length' => '91',
+          'content-length' => '92',
           'date' => 'Sat, 28 Sep 1996 00:00:00 GMT',
-          'server' => "WEBrick/1.4.2 (Ruby/2.6.6/2020-03-31)",
+          'server' => 'WEBrick/1.4.2 (Ruby/2.6.6/2020-03-31)',
+          'vary' => 'Accept-Encoding',
+          'cache-control' => 'max-age=31536000',
+          'content-type' => 'image/*',
+          'etag' => '33a64df551425fcc55e4d42a148795d9f25f89d4',
+          'expires' => 'Wed, 21 Oct 2021 07:28:00 GMT',
+          'last-modified' => 'Sat, 28 Sep 1996 00:00:00 GMT',
+          'transfer-encoding' => 'gzip',
         })
       end
     end

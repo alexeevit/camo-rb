@@ -2,8 +2,10 @@ require 'faraday'
 
 module Camo
   class Client
+    include Rack::Utils
     include HeadersUtils
-    ALLOWED_TRANSFERRED_HEADERS = %w(Host Accept Accept-Encoding) # TODO check - _ and case sensitivity
+
+    ALLOWED_TRANSFERRED_HEADERS = HeaderHash[%w(Host Accept Accept-Encoding)]
 
     def get(url, transferred_headers = {})
       url = URI.parse(url)
@@ -16,12 +18,17 @@ module Camo
     private
 
     def build_request_headers(headers, url:)
+      headers = headers.each_with_object({}) do |header, headers|
+        key = header[0].gsub('_', '-')
+        headers[key] = header[1]
+      end
+
       headers = headers
         .select { |k,_| ALLOWED_TRANSFERRED_HEADERS.include?(k) }
         .merge(default_request_headers)
 
       headers['Host'] = url.host if String(headers['Host']).empty?
-      headers
+      HeaderHash[headers]
     end
   end
 end
