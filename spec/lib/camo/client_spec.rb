@@ -29,6 +29,31 @@ describe Camo::Client do
         })
       end
     end
+
+    it 'follows redirects' do
+      mock_server('redirects_server') do |uri|
+        status, headers, body = client.get(uri)
+        expect(body).to eq('Redirected')
+      end
+    end
+
+    context 'when too many redirects' do
+      it 'raises an error' do
+        mock_server('redirects_server') do |uri|
+          expect { client.get("#{uri}/endless_redirect") }.to raise_error Camo::Errors::TooManyRedirects
+        end
+      end
+    end
+
+    context 'when not modified' do
+      it 'returns empty body' do
+        mock_server('redirects_server') do |uri|
+          status, headers, body = client.get("#{uri}/not_modified")
+          expect(status).to eq(304)
+          expect(body).to be_nil
+        end
+      end
+    end
   end
 
   describe '#build_request_headers' do
