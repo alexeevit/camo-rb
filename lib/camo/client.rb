@@ -6,13 +6,18 @@ module Camo
     include HeadersUtils
 
     ALLOWED_TRANSFERRED_HEADERS = HeaderHash[%w(Host Accept Accept-Encoding)]
+    KEEP_ALIVE = ['1', 'true', true].include?(ENV.fetch('CAMORB_KEEP_ALIVE', false))
     MAX_REDIRECTS = ENV.fetch('CAMORB_MAX_REDIRECTS', 4)
+    SOCKET_TIMEOUT = ENV.fetch('CAMORB_SOCKET_TIMEOUT', 10)
 
     def get(url, transferred_headers = {}, remaining_redirects = MAX_REDIRECTS)
       url = URI.parse(url)
       headers = build_request_headers(transferred_headers, url: url)
 
-      response = Faraday.get(url, {}, headers)
+      response = Faraday.get(url, {}, headers) do |req|
+        req.options.timeout = SOCKET_TIMEOUT
+      end
+
       case response.status
       when redirect?
         redirect(response, headers, remaining_redirects)
@@ -21,14 +26,16 @@ module Camo
       else
         [response.status, response.headers, response.body]
       end
+    rescue Faraday::TimeoutError
+      raise Errors::TimeoutError
     end
 
     private
 
     def redirect(response, headers, remaining_redirects)
-      raise Errors::TooManyRedirects if remaining_redirects < 0
+      raise Errors::TooManyRedirectsError if remaining_redirects < 0
       new_url = String(response.headers['location'])
-      raise Errors::RedirectWithoutLocation if new_url.empty?
+      raise Errors::RedirectWithoutLocationError if new_url.empty?
 
       get(new_url, headers, remaining_redirects - 1)
     end
@@ -55,6 +62,8 @@ module Camo
         headers['Host'] = String(url.host)
         headers['Host'] += ":#{url.port}" unless [80, 443].include?(url.port)
       end
+
+      headers['Connection'] = KEEP_ALIVE ? 'keep-alive' : 'close'
 
       HeaderHash[headers]
     end

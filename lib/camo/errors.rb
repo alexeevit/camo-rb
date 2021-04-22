@@ -1,6 +1,9 @@
 module Camo
   module Errors
-    class TooManyRedirects < ::StandardError
-    end
+    class RedirectWithoutLocationError < ::StandardError; end
+
+    class TooManyRedirectsError < ::StandardError; end
+
+    class TimeoutError < ::StandardError; end
   end
 end

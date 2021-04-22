@@ -40,7 +40,15 @@ describe Camo::Client do
     context 'when too many redirects' do
       it 'raises an error' do
         mock_server('redirects_server') do |uri|
-          expect { client.get("#{uri}/endless_redirect") }.to raise_error Camo::Errors::TooManyRedirects
+          expect { client.get("#{uri}/endless_redirect") }.to raise_error Camo::Errors::TooManyRedirectsError
+        end
+      end
+    end
+
+    context 'when redirect without location' do
+      it 'raises an error' do
+        mock_server('redirects_server') do |uri|
+          expect { client.get("#{uri}/empty_redirect") }.to raise_error Camo::Errors::RedirectWithoutLocationError
         end
       end
     end
@@ -51,6 +59,38 @@ describe Camo::Client do
           status, headers, body = client.get("#{uri}/not_modified")
           expect(status).to eq(304)
           expect(body).to be_nil
+        end
+      end
+    end
+
+    context 'when KEEP_ALIVE is disabled' do
+      before { stub_const 'Camo::Client::KEEP_ALIVE', false }
+
+      it 'sends Connection: close' do
+        mock_server('hello_world_server') do |uri|
+          _status, headers, _body = client.get(uri)
+          expect(headers).to include('connection' => 'close')
+        end
+      end
+    end
+
+    context 'when KEEP_ALIVE is enabled' do
+      before { stub_const 'Camo::Client::KEEP_ALIVE', true }
+
+      it 'sends Connection: keep-alive' do
+        mock_server('hello_world_server') do |uri|
+          _status, headers, _body = client.get(uri)
+          expect(headers).to include('connection' => 'Keep-Alive')
+        end
+      end
+    end
+
+    context 'when request exceeds the timeout' do
+      before { stub_const 'Camo::Client::SOCKET_TIMEOUT', 1 }
+
+      it 'raises an error' do
+        mock_server('timeout_server') do |uri|
+          expect { client.get(uri) }.to raise_error Camo::Errors::TimeoutError
         end
       end
     end
