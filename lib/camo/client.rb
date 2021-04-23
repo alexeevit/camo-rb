@@ -9,14 +9,14 @@ module Camo
     KEEP_ALIVE = ['1', 'true', true].include?(ENV.fetch('CAMORB_KEEP_ALIVE', false))
     MAX_REDIRECTS = ENV.fetch('CAMORB_MAX_REDIRECTS', 4)
     SOCKET_TIMEOUT = ENV.fetch('CAMORB_SOCKET_TIMEOUT', 10)
+    CONTENT_LENGTH_LIMIT = ENV.fetch('CAMORB_LENGTH_LIMIT', 5242880).to_i
 
     def get(url, transferred_headers = {}, remaining_redirects = MAX_REDIRECTS)
       url = URI.parse(url)
       headers = build_request_headers(transferred_headers, url: url)
+      response = get_request(url, headers, timeout: SOCKET_TIMEOUT)
 
-      response = Faraday.get(url, {}, headers) do |req|
-        req.options.timeout = SOCKET_TIMEOUT
-      end
+      raise Errors::ContentLengthExceededError if response.headers['content-length'].to_i > CONTENT_LENGTH_LIMIT
 
       case response.status
       when redirect?
@@ -26,11 +26,19 @@ module Camo
       else
         [response.status, response.headers, response.body]
       end
-    rescue Faraday::TimeoutError
-      raise Errors::TimeoutError
     end
 
     private
+
+    def get_request(url, headers, options = {})
+      Faraday.get(url, {}, headers) do |req|
+        options.each do |key, value|
+          req.options.public_send("#{key}=", value)
+        end
+      end
+    rescue Faraday::TimeoutError
+      raise Errors::TimeoutError
+    end
 
     def redirect(response, headers, remaining_redirects)
       raise Errors::TooManyRedirectsError if remaining_redirects < 0

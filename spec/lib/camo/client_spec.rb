@@ -94,6 +94,16 @@ describe Camo::Client do
         end
       end
     end
+
+    context 'when too big response Content-Length' do
+      before { stub_const 'Camo::Client::CONTENT_LENGTH_LIMIT', 10 }
+
+      it 'raises an error' do
+        mock_server('eleven_bytes_server') do |uri|
+          expect { client.get(uri) }.to raise_error Camo::Errors::ContentLengthExceededError
+        end
+      end
+    end
   end
 
   describe '#build_request_headers' do
