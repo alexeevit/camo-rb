@@ -29,12 +29,12 @@ describe Camo::Server do
 
       # allowed headers from remote
       expect(last_response.headers).to include({
-        'content-type' => 'image/*',
+        'content-type' => 'image/jpeg',
         'cache-control' => 'max-age=31536000',
         'etag' => '33a64df551425fcc55e4d42a148795d9f25f89d4',
         'expires' => 'Wed, 21 Oct 2021 07:28:00 GMT',
         'last-modified' => 'Sat, 28 Sep 1996 00:00:00 GMT',
-        'content-length' => '92',
+        'content-length' => '36',
         'transfer-encoding' => 'gzip',
         'content-encoding' => 'gzip',
       })
@@ -62,9 +62,7 @@ describe Camo::Server do
         get camo_url(uri)
 
         expect(last_response.status).to eq(200)
-        expect(last_response.body).to eq(<<~HTML.chomp)
-          <!doctype html>\n<html>\n  <head></head>\n  <body>\n    <h1>Hello World!</h1>\n  </body>\n</html>
-        HTML
+        expect(last_response.body).to eq('helloworld')
       end
     end
 
@@ -93,9 +91,7 @@ describe Camo::Server do
         get camo_url(uri, format: :query)
 
         expect(last_response.status).to eq(200)
-        expect(last_response.body).to eq(<<~HTML.chomp)
-          <!doctype html>\n<html>\n  <head></head>\n  <body>\n    <h1>Hello World!</h1>\n  </body>\n</html>
-        HTML
+        expect(last_response.body).to eq('helloworld')
       end
     end
 

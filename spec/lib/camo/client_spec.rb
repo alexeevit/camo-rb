@@ -10,18 +10,16 @@ describe Camo::Client do
     it 'returns the body and headers of the resource' do
       mock_server('hello_world_server') do |uri|
         status, headers, body = client.get(uri)
-        expect(body).to eq(<<~HTML.chomp)
-          <!doctype html>\n<html>\n  <head></head>\n  <body>\n    <h1>Hello World!</h1>\n  </body>\n</html>
-        HTML
 
+        expect(body).to eq('helloworld')
         expect(headers).to match({
           'connection' => 'close',
-          'content-length' => '92',
+          'content-length' => '36',
           'date' => 'Sat, 28 Sep 1996 00:00:00 GMT',
           'server' => 'WEBrick/1.4.2 (Ruby/2.6.6/2020-03-31)',
           'vary' => 'Accept-Encoding',
           'cache-control' => 'max-age=31536000',
-          'content-type' => 'image/*',
+          'content-type' => 'image/jpeg',
           'etag' => '33a64df551425fcc55e4d42a148795d9f25f89d4',
           'expires' => 'Wed, 21 Oct 2021 07:28:00 GMT',
           'last-modified' => 'Sat, 28 Sep 1996 00:00:00 GMT',
@@ -101,6 +99,14 @@ describe Camo::Client do
       it 'raises an error' do
         mock_server('eleven_bytes_server') do |uri|
           expect { client.get(uri) }.to raise_error Camo::Errors::ContentLengthExceededError
+        end
+      end
+    end
+
+    context 'when not supported Content-Type' do
+      it 'raises an error' do
+        mock_server('json_server') do |uri|
+          expect { client.get(uri) }.to raise_error Camo::Errors::UnsupportedContentTypeError
         end
       end
     end

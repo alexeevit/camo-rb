@@ -7,5 +7,7 @@ module Camo
     class TimeoutError < ::StandardError; end
 
     class ContentLengthExceededError < ::StandardError; end
+
+    class UnsupportedContentTypeError < ::StandardError; end
   end
 end

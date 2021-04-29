@@ -4,6 +4,7 @@ module Camo
   class Client
     include Rack::Utils
     include HeadersUtils
+    include MimeTypeUtils
 
     ALLOWED_TRANSFERRED_HEADERS = HeaderHash[%w(Host Accept Accept-Encoding)]
     KEEP_ALIVE = ['1', 'true', true].include?(ENV.fetch('CAMORB_KEEP_ALIVE', false))
@@ -16,19 +17,23 @@ module Camo
       headers = build_request_headers(transferred_headers, url: url)
       response = get_request(url, headers, timeout: SOCKET_TIMEOUT)
 
-      raise Errors::ContentLengthExceededError if response.headers['content-length'].to_i > CONTENT_LENGTH_LIMIT
-
       case response.status
       when redirect?
         redirect(response, headers, remaining_redirects)
       when not_modified?
         [response.status, response.headers]
       else
+        validate_response!(response)
         [response.status, response.headers, response.body]
       end
     end
 
     private
+
+    def validate_response!(response)
+      raise Errors::ContentLengthExceededError if response.headers['content-length'].to_i > CONTENT_LENGTH_LIMIT
+      raise Errors::UnsupportedContentTypeError unless SUPPORTED_CONTENT_TYPES.include?(response.headers['content-type'].to_s)
+    end
 
     def get_request(url, headers, options = {})
       Faraday.get(url, {}, headers) do |req|
