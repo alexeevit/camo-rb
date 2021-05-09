@@ -17,7 +17,7 @@ module MockHelpers
         run server_class.new
       end
 
-      Rack::Handler.default.run(builder, Host: host, Port: port, Silent: false) do |server|
+      Rack::Handler::WEBrick.run(builder, Host: host, Port: port, Silent: false) do |server|
         writer.puts(1) # signal that the server is up
       end
     end

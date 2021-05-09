@@ -8,4 +8,5 @@ group :test do
   gem 'rack-test'
   gem 'timecop'
   gem 'pry'
+  gem 'webrick'
 end

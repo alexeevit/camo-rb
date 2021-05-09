@@ -27,6 +27,7 @@ GEM
       rspec-support (~> 3.10.0)
     rspec-support (3.10.0)
     timecop (0.9.4)
+    webrick (1.7.0)
 
 PLATFORMS
   ruby
@@ -40,6 +41,7 @@ DEPENDENCIES
   rack-test
   rspec
   timecop
+  webrick
 
 BUNDLED WITH
-   2.2.2
+   2.2.17

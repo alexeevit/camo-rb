@@ -16,7 +16,7 @@ describe Camo::Client do
           'connection' => 'close',
           'content-length' => '36',
           'date' => 'Sat, 28 Sep 1996 00:00:00 GMT',
-          'server' => 'WEBrick/1.4.2 (Ruby/2.6.6/2020-03-31)',
+          'server' => /WEBrick/,
           'vary' => 'Accept-Encoding',
           'cache-control' => 'max-age=31536000',
           'content-type' => 'image/jpeg',
