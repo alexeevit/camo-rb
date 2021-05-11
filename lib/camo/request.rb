@@ -4,17 +4,32 @@ module Camo
   class Request
     include Rack::Utils
     include HeadersUtils
-    attr_reader :method, :path, :headers, :params, :url, :digest, :errors
+    attr_reader :method, :protocol, :host, :path, :headers, :query_string, :params, :destination_url, :digest, :digest_type, :errors
 
     def initialize(env)
       @method = env['REQUEST_METHOD']
-      @params = parse_query(env['QUERY_STRING'])
+      @query_string = env['QUERY_STRING']
+      @params = parse_query(@query_string)
+      @protocol = env['rack.url_scheme'] || 'http'
+      @host = env['HTTP_HOST']
       @path = env['PATH_INFO']
       @headers = build_headers(env)
 
       @digest, encoded_url = path[1..-1].split('/', 2).map { |part| String(part) }
-      @url = String(encoded_url ? decode_hex(encoded_url) : params['url'])
+
+      if encoded_url
+        @digest_type = 'path'
+        @destination_url = String(decode_hex(encoded_url))
+      else
+        @digest_type = 'query'
+        @destination_url = String(params['url'])
+      end
+
       @errors = []
+    end
+
+    def url
+      "#{protocol}://#{host}#{path}#{query_string.empty? ? nil : "?#{query_string}"}"
     end
 
     def valid_request?
@@ -23,7 +38,7 @@ module Camo
     end
 
     def valid_digest?
-      OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), ENV['CAMORB_KEY'], url) == digest
+      OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), ENV['CAMORB_KEY'], destination_url) == digest
     end
 
     private
@@ -40,7 +55,7 @@ module Camo
     def validate_request
       @errors ||= []
 
-      errors << 'Empty URL' if url.empty?
+      errors << 'Empty URL' if destination_url.empty?
       errors << 'Recursive request' if headers['VIA'] == user_agent
       errors
     end

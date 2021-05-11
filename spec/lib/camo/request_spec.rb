@@ -9,6 +9,7 @@ describe Camo::Request do
       'REQUEST_METHOD' => 'GET',
       'QUERY_STRING' => query,
       'PATH_INFO' => path,
+      'rack.url_scheme' => 'http',
     }.merge(headers_to_env(headers))
   end
 
@@ -27,8 +28,9 @@ describe Camo::Request do
 
       it 'fills path, url and digest' do
         expect(request.path).to eq(path)
-        expect(request.url).to eq(url)
+        expect(request.destination_url).to eq(url)
         expect(request.digest).to eq(url_digest)
+        expect(request.digest_type).to eq('path')
       end
     end
 
@@ -39,14 +41,39 @@ describe Camo::Request do
       it 'fills path, url, digest, params' do
         expect(request.path).to eq(path)
         expect(request.params).to eq('url' => url)
-        expect(request.url).to eq(url)
+        expect(request.destination_url).to eq(url)
         expect(request.digest).to eq(url_digest)
+        expect(request.digest_type).to eq('query')
       end
     end
 
     it 'fills method and headers' do
       expect(request.method).to eq('GET')
       expect(request.headers).to eq('HOST' => 'camorb', 'ACCEPT_ENCODING' => 'gzip')
+    end
+  end
+
+  describe '#request_url' do
+    let(:url) { 'https://google.com' }
+    let(:url_digest) { digest(url) }
+
+    context 'when path format' do
+      let(:query) { '' }
+      let(:encoded_url) { encode_url(url) }
+      let(:path) { "/#{url_digest}/#{encoded_url}" }
+
+      it 'compiles the url' do
+        expect(request.url).to eq("http://camorb/#{url_digest}/#{encoded_url}")
+      end
+    end
+
+    context 'when query format' do
+      let(:query) { query_string(url) }
+      let(:path) { "/#{url_digest}" }
+
+      it 'compiles the url' do
+        expect(request.url).to eq("http://camorb/#{url_digest}?#{query}")
+      end
     end
   end
 

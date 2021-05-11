@@ -12,10 +12,20 @@ module Camo
     SOCKET_TIMEOUT = ENV.fetch('CAMORB_SOCKET_TIMEOUT', 10)
     CONTENT_LENGTH_LIMIT = ENV.fetch('CAMORB_LENGTH_LIMIT', 5242880).to_i
 
+    attr_reader :logger
+
+    def initialize(logger = Logger.stdio)
+      @logger = logger
+    end
+
     def get(url, transferred_headers = {}, remaining_redirects = MAX_REDIRECTS)
+      logger.debug "Handling request to #{url}", { transferred_headers: transferred_headers, remaining_redirects: remaining_redirects }
+
       url = URI.parse(url)
       headers = build_request_headers(transferred_headers, url: url)
       response = get_request(url, headers, timeout: SOCKET_TIMEOUT)
+
+      logger.debug 'Request result', { status: response.status, headers: response.headers, body_bytesize: response.body.bytesize }
 
       case response.status
       when redirect?
@@ -48,6 +58,7 @@ module Camo
     def redirect(response, headers, remaining_redirects)
       raise Errors::TooManyRedirectsError if remaining_redirects < 0
       new_url = String(response.headers['location'])
+      logger.debug "Redirect to #{new_url}", { remaining_redirects: remaining_redirects }
       raise Errors::RedirectWithoutLocationError if new_url.empty?
 
       get(new_url, headers, remaining_redirects - 1)
