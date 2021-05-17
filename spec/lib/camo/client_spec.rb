@@ -106,7 +106,15 @@ describe Camo::Client do
     context 'when not supported Content-Type' do
       it 'raises an error' do
         mock_server('json_server') do |uri|
-          expect { client.get(uri) }.to raise_error Camo::Errors::UnsupportedContentTypeError
+          expect { client.get(uri) }.to raise_error Camo::Errors::UnsupportedContentTypeError, "Unsupported Content-Type: 'application/json'"
+        end
+      end
+    end
+
+    context 'when does not have Content-Type' do
+      it 'raises an error' do
+        mock_server('empty_server') do |uri|
+          expect { client.get(uri) }.to raise_error Camo::Errors::EmptyContentTypeError
         end
       end
     end

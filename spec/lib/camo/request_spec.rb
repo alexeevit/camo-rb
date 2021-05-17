@@ -28,7 +28,7 @@ describe Camo::Request do
 
       it 'fills path, url and digest' do
         expect(request.path).to eq(path)
-        expect(request.destination_url).to eq(url)
+        expect(request.destination_url.to_s).to eq(url)
         expect(request.digest).to eq(url_digest)
         expect(request.digest_type).to eq('path')
       end
@@ -41,7 +41,7 @@ describe Camo::Request do
       it 'fills path, url, digest, params' do
         expect(request.path).to eq(path)
         expect(request.params).to eq('url' => url)
-        expect(request.destination_url).to eq(url)
+        expect(request.destination_url.to_s).to eq(url)
         expect(request.digest).to eq(url_digest)
         expect(request.digest_type).to eq('query')
       end

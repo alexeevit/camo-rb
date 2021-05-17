@@ -1,9 +1,13 @@
 require 'rack/utils'
+require 'addressable/uri'
 
 module Camo
   class Request
     include Rack::Utils
     include HeadersUtils
+
+    SUPPORTED_PROTOCOLS = %w(http https)
+
     attr_reader :method, :protocol, :host, :path, :headers, :query_string, :params, :destination_url, :digest, :digest_type, :errors
 
     def initialize(env)
@@ -19,10 +23,10 @@ module Camo
 
       if encoded_url
         @digest_type = 'path'
-        @destination_url = String(decode_hex(encoded_url))
+        @destination_url = Addressable::URI.parse(String(decode_hex(encoded_url)))
       else
         @digest_type = 'query'
-        @destination_url = String(params['url'])
+        @destination_url = Addressable::URI.parse(String(params['url']))
       end
 
       @errors = []
@@ -56,6 +60,12 @@ module Camo
       @errors ||= []
 
       errors << 'Empty URL' if destination_url.empty?
+      errors << 'Empty host' if !destination_url.empty? && String(destination_url.host).empty?
+
+      if destination_url.scheme && !SUPPORTED_PROTOCOLS.include?(destination_url.scheme)
+        errors << "Unsupported protocol: '#{destination_url.scheme}'"
+      end
+
       errors << 'Recursive request' if headers['VIA'] == user_agent
       errors
     end

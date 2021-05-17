@@ -33,7 +33,7 @@ module Camo
     end
 
     def compile_output(msg, params)
-      output = msg
+      output = msg.is_a?(Array) ? msg.join(', ') : msg
 
       if params.any?
         output = "#{output} | #{convert_params_to_string(params)}"

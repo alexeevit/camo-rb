@@ -42,7 +42,9 @@ module Camo
 
     def validate_response!(response)
       raise Errors::ContentLengthExceededError if response.headers['content-length'].to_i > CONTENT_LENGTH_LIMIT
-      raise Errors::UnsupportedContentTypeError unless SUPPORTED_CONTENT_TYPES.include?(response.headers['content-type'].to_s)
+      content_type = String(response.headers['content-type'])
+      raise Errors::EmptyContentTypeError if content_type.empty?
+      raise Errors::UnsupportedContentTypeError, content_type unless SUPPORTED_CONTENT_TYPES.include?(content_type)
     end
 
     def get_request(url, headers, options = {})

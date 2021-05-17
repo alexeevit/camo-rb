@@ -23,8 +23,16 @@ module Camo
       build_request(env)
 
       return [404, default_response_headers, []] unless request.method == 'GET'
-      return [401, default_response_headers, ['Invalid digest']] unless request.valid_digest?
-      return [400, default_response_headers, request.errors] unless request.valid_request?
+
+      unless request.valid_digest?
+        logger.error('Invalid digest')
+        return [401, default_response_headers, ['Invalid digest']]
+      end
+
+      unless request.valid_request?
+        logger.error(request.errors)
+        return [422, default_response_headers, request.errors.join(', ')]
+      end
 
       logger.debug 'Request', {
         type: request.digest_type,
@@ -39,6 +47,9 @@ module Camo
       logger.debug 'Response', { status: status, headers: headers, body_bytesize: body.bytesize }
 
       [status, headers, [body]]
+    rescue Errors::ClientError => e
+      logger.error(e.message)
+      return [422, default_response_headers, e.message]
     end
 
     private

@@ -49,9 +49,9 @@ describe Camo::Server do
   end
 
   context 'when url is not provided' do
-    it 'returns 400' do
+    it 'returns 422' do
       get camo_url('')
-      expect(last_response.status).to eq(400)
+      expect(last_response.status).to eq(422)
       expect(last_response.body).to eq('Empty URL')
     end
   end
@@ -108,6 +108,95 @@ describe Camo::Server do
         get "/digest/#{encode_url('https://localhost:3000')}"
         expect(last_response.status).to eq(401)
         expect(last_response.body).to eq('Invalid digest')
+      end
+    end
+  end
+
+  context 'when empty host' do
+    it 'returns 422 with error message' do
+      get camo_url('invalid')
+      expect(last_response.status).to eq(422)
+      expect(last_response.body).to eq('Empty host')
+    end
+  end
+
+  context 'when the url has unsupported protocol' do
+    it 'returns 422 with error message' do
+      get camo_url('sftp://localhost:3000')
+      expect(last_response.status).to eq(422)
+      expect(last_response.body).to eq("Unsupported protocol: 'sftp'")
+    end
+  end
+
+  context 'when recursive request' do
+    it 'returns 422 with error message' do
+      header 'VIA', "CamoRB Asset Proxy #{Camo::Version::GEM}"
+      get camo_url('http://localhost:3000')
+      expect(last_response.status).to eq(422)
+      expect(last_response.body).to eq('Recursive request')
+    end
+  end
+
+  context 'when redirect with no location' do
+    it 'returns 422 with error message' do
+      mock_server('redirects_server') do |uri|
+        get camo_url("#{uri}/empty_redirect")
+        expect(last_response.status).to eq(422)
+        expect(last_response.body).to eq('Redirect with no location')
+      end
+    end
+  end
+
+  context 'when too many redirects' do
+    it 'returns 422 with error message' do
+      mock_server('redirects_server') do |uri|
+        get camo_url("#{uri}/endless_redirect")
+        expect(last_response.status).to eq(422)
+        expect(last_response.body).to eq('Too many redirects')
+      end
+    end
+  end
+
+  context 'when timeout' do
+    before { stub_const 'Camo::Client::SOCKET_TIMEOUT', 1 }
+
+    it 'returns 422 with error message' do
+      mock_server('timeout_server') do |uri|
+        get camo_url(uri)
+        expect(last_response.status).to eq(422)
+        expect(last_response.body).to eq('Request timeout')
+      end
+    end
+  end
+
+  context 'when content-length is exceeded' do
+    before { stub_const 'Camo::Client::CONTENT_LENGTH_LIMIT', 10 }
+
+    it 'returns 422 with error message' do
+      mock_server('eleven_bytes_server') do |uri|
+        get camo_url(uri)
+        expect(last_response.status).to eq(422)
+        expect(last_response.body).to eq('Max Content-Length is exceeded')
+      end
+    end
+  end
+
+  context 'when unsupported mime-type' do
+    it 'returns 422 with error message' do
+      mock_server('json_server') do |uri|
+        get camo_url(uri)
+        expect(last_response.status).to eq(422)
+        expect(last_response.body).to eq("Unsupported Content-Type: 'application/json'")
+      end
+    end
+  end
+
+  context 'when response does not have content-type' do
+    it 'returns 422 with error message' do
+      mock_server('empty_server') do |uri|
+        get camo_url(uri)
+        expect(last_response.status).to eq(422)
+        expect(last_response.body).to eq('Empty Content-Type')
       end
     end
   end

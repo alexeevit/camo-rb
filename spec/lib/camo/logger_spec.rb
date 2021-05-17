@@ -58,6 +58,12 @@ describe Camo::Logger do
   end
 
   describe '#compile_output' do
+    context 'when message is array' do
+      it 'joins the array with comma' do
+        expect(logger.send(:compile_output, ['hello', 'world'], {})).to eq('hello, world')
+      end
+    end
+
     context 'when there are no params' do
       it 'returns only the message' do
         expect(logger.send(:compile_output, message, {})).to eq('Some message')
