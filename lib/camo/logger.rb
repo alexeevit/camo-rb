@@ -2,8 +2,8 @@ module Camo
   class Logger
     attr_reader :outpipe, :errpipe
 
-    LOG_LEVELS = ['debug', 'error', 'fatal'].freeze
-    LOG_LEVEL = (LOG_LEVELS.find { |level| level == ENV['CAMORB_LOG_LEVEL'] } || 'fatal').freeze
+    LOG_LEVELS = ["debug", "error", "fatal"].freeze
+    LOG_LEVEL = (LOG_LEVELS.find { |level| level == ENV["CAMORB_LOG_LEVEL"] } || "fatal").freeze
 
     def initialize(outpipe, errpipe)
       @outpipe = outpipe
@@ -25,15 +25,15 @@ module Camo
     private
 
     def debug?
-      LOG_LEVELS.find_index(LOG_LEVEL) <= LOG_LEVELS.find_index('debug')
+      LOG_LEVELS.find_index(LOG_LEVEL) <= LOG_LEVELS.find_index("debug")
     end
 
     def error?
-      LOG_LEVELS.find_index(LOG_LEVEL) <= LOG_LEVELS.find_index('error')
+      LOG_LEVELS.find_index(LOG_LEVEL) <= LOG_LEVELS.find_index("error")
     end
 
     def compile_output(msg, params)
-      output = msg.is_a?(Array) ? msg.join(', ') : msg
+      output = msg.is_a?(Array) ? msg.join(", ") : msg
 
       if params.any?
         output = "#{output} | #{convert_params_to_string(params)}"
@@ -56,7 +56,7 @@ module Camo
         elements << "#{key}: #{compiled_value}"
       end
 
-      "{ #{elements.join(', ')} }"
+      "{ #{elements.join(", ")} }"
     end
   end
 end

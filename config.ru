@@ -1,2 +1,2 @@
-require_relative 'environment'
+require_relative "environment"
 run Camo::Server.new

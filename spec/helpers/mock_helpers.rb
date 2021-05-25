@@ -1,16 +1,16 @@
 module MockHelpers
   MOCK_RUN_TIMEOUT = 5
 
-  def mock_server(name, host='localhost', port=38750, gzip: false, chunked: false)
+  def mock_server(name, host = "localhost", port = 38750, gzip: false, chunked: false)
     reader, writer = IO.pipe
 
     pid = fork do
-      STDOUT.reopen "/dev/null"
-      STDERR.reopen "/dev/null"
+      $stdout.reopen "/dev/null"
+      $stderr.reopen "/dev/null"
 
       reader.close
       require_relative "../server_mocks/#{name}"
-      server_class = Object.const_get(camelize(name.to_s.sub(/.*\./, ''.freeze)))
+      server_class = Object.const_get(camelize(name.to_s.sub(/.*\./, "".freeze)))
 
       builder = Rack::Builder.new do
         use Rack::Chunked if chunked
@@ -24,7 +24,6 @@ module MockHelpers
     end
 
     writer.close
-    run_started = Time.now.to_i
 
     begin
       reader.read_nonblock(1) # start only when the server is up
