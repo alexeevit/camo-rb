@@ -1,7 +1,7 @@
 module MockHelpers
   MOCK_RUN_TIMEOUT = 5
 
-  def mock_server(name, host='localhost', port=38750)
+  def mock_server(name, host='localhost', port=38750, gzip: false, chunked: false)
     reader, writer = IO.pipe
 
     pid = fork do
@@ -13,11 +13,12 @@ module MockHelpers
       server_class = Object.const_get(camelize(name.to_s.sub(/.*\./, ''.freeze)))
 
       builder = Rack::Builder.new do
-        use Rack::Deflater
+        use Rack::Chunked if chunked
+        use Rack::Deflater if gzip
         run server_class.new
       end
 
-      Rack::Handler::WEBrick.run(builder, Host: host, Port: port, Silent: false) do |server|
+      Rack::Handler::WEBrick.run(builder, Host: host, Port: port) do |server|
         writer.puts(1) # signal that the server is up
       end
     end

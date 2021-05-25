@@ -1,4 +1,6 @@
 require 'spec_helper'
+require 'zlib'
+require 'stringio'
 
 describe Camo::Server do
   before do
@@ -9,35 +11,62 @@ describe Camo::Server do
   after { Timecop.return }
 
   it 'returns custom camo headers, security headers, and allowed headers from remote' do
-    mock_server('hello_world_server') do |uri|
+    mock_server('hello_world_server', gzip: true) do |uri|
       header 'Accept-Encoding', 'gzip'
       get camo_url(uri)
 
-      # security headers
-      expect(last_response.headers).to include({
+      expect(last_response).to be_ok
+      expect(last_response.headers).to match({
+        # security headers
         'X-Frame-Options' => "deny",
         'X-XSS-Protection' => "1; mode=block",
         'X-Content-Type-Options' => "nosniff",
         'Content-Security-Policy' => "default-src 'none'; img-src data:; style-src 'unsafe-inline'",
         'Strict-Transport-Security' => "max-age=31536000; includeSubDomains",
-      })
 
-      # custom camo headers
-      expect(last_response.headers).to include({
+        # custom camo headers
         'Camo-Host' => 'unknown',
-      })
 
-      # allowed headers from remote
-      expect(last_response.headers).to include({
+        # allowed headers from remote
         'content-type' => 'image/jpeg',
         'cache-control' => 'max-age=31536000',
         'etag' => '33a64df551425fcc55e4d42a148795d9f25f89d4',
         'expires' => 'Wed, 21 Oct 2021 07:28:00 GMT',
         'last-modified' => 'Sat, 28 Sep 1996 00:00:00 GMT',
         'content-length' => '36',
-        'transfer-encoding' => 'gzip',
         'content-encoding' => 'gzip',
       })
+    end
+  end
+
+  context 'when compressed and chunked' do
+    it 'returns joined chunks compressed' do
+      mock_server('hello_world_server', gzip: true, chunked: true) do |uri|
+        header 'Accept-Encoding', 'gzip'
+        get camo_url(uri)
+
+        expect(last_response).to be_ok
+        # expect(last_response.body).to eq('helloworld')
+        expect(last_response.headers).to match({
+          # security headers
+          'X-Frame-Options' => "deny",
+          'X-XSS-Protection' => "1; mode=block",
+          'X-Content-Type-Options' => "nosniff",
+          'Content-Security-Policy' => "default-src 'none'; img-src data:; style-src 'unsafe-inline'",
+          'Strict-Transport-Security' => "max-age=31536000; includeSubDomains",
+
+          # custom camo headers
+          'Camo-Host' => 'unknown',
+
+          # allowed headers from remote
+          'content-type' => 'image/jpeg',
+          'cache-control' => 'max-age=31536000',
+          'etag' => '33a64df551425fcc55e4d42a148795d9f25f89d4',
+          'expires' => 'Wed, 21 Oct 2021 07:28:00 GMT',
+          'last-modified' => 'Sat, 28 Sep 1996 00:00:00 GMT',
+          'content-encoding' => 'gzip',
+        })
+      end
     end
   end
 

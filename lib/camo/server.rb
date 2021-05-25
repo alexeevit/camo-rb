@@ -13,7 +13,6 @@ module Camo
       Expires
       Last-Modified
       Content-Length
-      Transfer-Encoding
       Content-Encoding
     ).map(&:downcase)]
 

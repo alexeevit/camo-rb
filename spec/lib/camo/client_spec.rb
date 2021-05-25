@@ -14,16 +14,14 @@ describe Camo::Client do
         expect(body).to eq('helloworld')
         expect(headers).to match({
           'connection' => 'close',
-          'content-length' => '36',
+          'content-length' => '10',
           'date' => 'Sat, 28 Sep 1996 00:00:00 GMT',
           'server' => /WEBrick/,
-          'vary' => 'Accept-Encoding',
           'cache-control' => 'max-age=31536000',
           'content-type' => 'image/jpeg',
           'etag' => '33a64df551425fcc55e4d42a148795d9f25f89d4',
           'expires' => 'Wed, 21 Oct 2021 07:28:00 GMT',
           'last-modified' => 'Sat, 28 Sep 1996 00:00:00 GMT',
-          'transfer-encoding' => 'gzip',
         })
       end
     end
@@ -32,6 +30,28 @@ describe Camo::Client do
       mock_server('redirects_server') do |uri|
         status, headers, body = client.get(uri)
         expect(body).to eq('Redirected')
+      end
+    end
+
+    context 'when chunked and compressed' do
+      it 'returns the body and headers of the resource' do
+        mock_server('hello_world_server', chunked: true, gzip: true) do |uri|
+          status, headers, body = client.get(uri)
+
+          expect(body).to eq('helloworld')
+          expect(headers).to match({
+            'connection' => 'close',
+            'date' => 'Sat, 28 Sep 1996 00:00:00 GMT',
+            'server' => /WEBrick/,
+            'vary' => 'Accept-Encoding',
+            'cache-control' => 'max-age=31536000',
+            'content-type' => 'image/jpeg',
+            'etag' => '33a64df551425fcc55e4d42a148795d9f25f89d4',
+            'expires' => 'Wed, 21 Oct 2021 07:28:00 GMT',
+            'last-modified' => 'Sat, 28 Sep 1996 00:00:00 GMT',
+            'transfer-encoding' => 'chunked',
+          })
+        end
       end
     end
 
