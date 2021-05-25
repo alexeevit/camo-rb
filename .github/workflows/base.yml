@@ -1,0 +1,33 @@
+name: Base
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7
+      - run: gem install standardrb
+      - run: standardrb
+  rspec:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: [2.6, 2.7, 3.0]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - name: Setup
+        run: bundle install --jobs 4 --retry 3
+      - name: Testing
+        run: bundle exec rspec
