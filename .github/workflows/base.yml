@@ -15,12 +15,12 @@ jobs:
         with:
           ruby-version: 2.7
       - run: gem install standardrb
-      - run: bundle exec standardrb
+      - run: standardrb
   rspec:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: [2.5, 2.6, 2.7, 3.0]
+        ruby: [2.6, 2.7, 3.0]
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
