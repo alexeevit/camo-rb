@@ -7,7 +7,15 @@ on:
     branches: [main]
 
 jobs:
-  pipeline:
+  linting:
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7
+      - run: gem install standardrb
+      - run: bundle exec standardrb
+  rspec:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -19,9 +27,6 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       - name: Setup
-        run: |
-          bundle install --jobs 4 --retry 3
-      - name: Lint
-        run: bundle exec standardrb
-      - name: Test
+        run: bundle install --jobs 4 --retry 3
+      - name: Testing
         run: bundle exec rspec

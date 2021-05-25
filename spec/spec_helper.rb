@@ -5,7 +5,7 @@ require "rack/test"
 require "timecop"
 require "pry"
 
-Dir[File.dirname(__FILE__) + "/helpers/**/*.rb"].each { |file| require file }
+Dir[File.dirname(__FILE__) + "/helpers/**/*.rb"].sort.each { |file| require file }
 
 RSpec.configure do |conf|
   conf.include Rack::Test::Methods
