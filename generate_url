@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+require "openssl"
+
+def encode_url(url)
+  url.bytes.map { |byte| "%02x" % byte }.join
+end
+
+def digest(url, key)
+  OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha1"), key, url)
+end
+
+url = String(ARGV[0])
+abort("Error: Wrong format\nExample:\n\nCAMORB_KEY=somekey ./generate_url http://google.com/logo.png") if url.empty?
+key = String(ENV["CAMORB_KEY"])
+abort("Key is required. Use the environment variable `CAMORB_KEY` to define it.") if key.empty?
+result = "/#{digest(url, key)}/#{encode_url(url)}"
+result = "#{ENV["CAMORB_HOST"]}#{result}" if ENV["CAMORB_HOST"]
+puts result
