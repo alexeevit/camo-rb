@@ -1,8 +1,9 @@
 source "https://rubygems.org"
 
-gem "rack"
-gem "faraday"
 gem "addressable"
+gem "faraday"
+gem "falcon"
+gem "rack"
 
 group :test do
   gem "pry"

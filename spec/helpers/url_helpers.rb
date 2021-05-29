@@ -1,11 +1,11 @@
 require "openssl"
 
 module UrlHelpers
-  def camo_url(url, format: :path)
+  def camo_url(url, key = ENV["CAMORB_KEY"], format: :path)
     raise ArgumentError, "Format argument must be :path (default) or :query" unless [:path, :query].include? format
 
-    return "/#{digest(url)}?#{query_string(url)}" if format == :query
-    "/#{digest(url)}/#{encode_url(url)}"
+    return "/#{digest(url, key)}?#{query_string(url)}" if format == :query
+    "/#{digest(url, key)}/#{encode_url(url)}"
   end
 
   def query_string(url)
@@ -16,7 +16,7 @@ module UrlHelpers
     url.bytes.map { |byte| "%02x" % byte }.join
   end
 
-  def digest(url)
-    OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha1"), ENV["CAMORB_KEY"], url)
+  def digest(url, key)
+    OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha1"), key, url)
   end
 end

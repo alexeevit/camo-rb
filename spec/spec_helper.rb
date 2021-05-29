@@ -1,4 +1,5 @@
 ENV["CAMORB_ENV"] = "test"
+ENV["CAMORB_KEY"] = "somekey"
 
 require_relative "../environment"
 require "rack/test"
@@ -14,6 +15,6 @@ RSpec.configure do |conf|
   conf.include HeadersHelpers
 
   def app
-    Camo::Server.new
+    Camo::Server.new(ENV["CAMORB_KEY"])
   end
 end

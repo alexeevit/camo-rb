@@ -1,6 +1,14 @@
 module Camo
   module Errors
-    class ClientError < ::StandardError; end
+    class AppError < ::StandardError; end
+
+    class UndefinedKeyError < AppError
+      def initialize(message = "Key is required. Use the environment variable `CAMORB_KEY` to define it.")
+        super
+      end
+    end
+
+    class ClientError < AppError; end
 
     class RedirectWithoutLocationError < ClientError
       def initialize(message = "Redirect with no location")

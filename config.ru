@@ -1,2 +1,7 @@
 require_relative "environment"
-run Camo::Server.new
+
+begin
+  run Camo::Server.new(ENV["CAMORB_KEY"])
+rescue Camo::Errors::AppError => e
+  abort("Error: #{e.message}")
+end

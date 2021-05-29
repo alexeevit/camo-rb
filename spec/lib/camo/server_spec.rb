@@ -5,10 +5,14 @@ require "stringio"
 describe Camo::Server do
   before do
     Timecop.freeze(Time.utc(1996, 9, 28))
-    ENV["CAMORB_KEY"] = "somekey"
   end
 
   after { Timecop.return }
+
+  it "raises an error if the key is not defined" do
+    expect { Camo::Server.new("") }.to raise_error(Camo::Errors::UndefinedKeyError)
+    expect { Camo::Server.new(nil) }.to raise_error(Camo::Errors::UndefinedKeyError)
+  end
 
   it "returns custom camo headers, security headers, and allowed headers from remote" do
     mock_server("hello_world_server", gzip: true) do |uri|

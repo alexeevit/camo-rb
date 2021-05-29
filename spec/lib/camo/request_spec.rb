@@ -1,8 +1,9 @@
 require "spec_helper"
 
 describe Camo::Request do
-  before { ENV["CAMORB_KEY"] = "somekey" }
-  subject(:request) { Camo::Request.new(env) }
+  subject(:request) { Camo::Request.new(env, key) }
+
+  let(:key) { "somekey" }
 
   let(:env) do
     {
@@ -14,13 +15,13 @@ describe Camo::Request do
   end
 
   let(:query) { "" }
-  let(:path) { camo_url(url) }
+  let(:path) { camo_url(url, key) }
   let(:headers) { {"Host" => "camorb", "Accept-Encoding" => "gzip"} }
   let(:url) { "https://google.com" }
 
   describe "#initialize" do
     let(:url) { "https://google.com" }
-    let(:url_digest) { digest(url) }
+    let(:url_digest) { digest(url, key) }
 
     context "when path format" do
       let(:query) { "" }
@@ -55,7 +56,7 @@ describe Camo::Request do
 
   describe "#request_url" do
     let(:url) { "https://google.com" }
-    let(:url_digest) { digest(url) }
+    let(:url_digest) { digest(url, key) }
 
     context "when path format" do
       let(:query) { "" }
@@ -91,7 +92,7 @@ describe Camo::Request do
   describe "#validate_request" do
     context "when url is empty in path format" do
       let(:query) { "" }
-      let(:path) { "/#{digest("")}" }
+      let(:path) { "/#{digest("", key)}" }
 
       it "adds an error" do
         expect { request.send(:validate_request) }
@@ -101,7 +102,7 @@ describe Camo::Request do
 
     context "when url is empty in query format" do
       let(:query) { "url=" }
-      let(:path) { "/#{digest("")}" }
+      let(:path) { "/#{digest("", key)}" }
 
       it "adds an error" do
         expect { request.send(:validate_request) }
@@ -132,7 +133,7 @@ describe Camo::Request do
     end
 
     context "when digest is invalid" do
-      let(:path) { "/#{digest("https://google.com")}/#{encode_url("https://yandex.ru")}" }
+      let(:path) { "/#{digest("https://google.com", key)}/#{encode_url("https://yandex.ru")}" }
       it { expect(request.send(:valid_digest?)).to be_falsey }
     end
   end

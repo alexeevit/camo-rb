@@ -8,9 +8,9 @@ module Camo
 
     SUPPORTED_PROTOCOLS = %w[http https]
 
-    attr_reader :method, :protocol, :host, :path, :headers, :query_string, :params, :destination_url, :digest, :digest_type, :errors
+    attr_reader :key, :method, :protocol, :host, :path, :headers, :query_string, :params, :destination_url, :digest, :digest_type, :errors
 
-    def initialize(env)
+    def initialize(env, key)
       @method = env["REQUEST_METHOD"]
       @query_string = env["QUERY_STRING"]
       @params = parse_query(@query_string)
@@ -18,6 +18,7 @@ module Camo
       @host = env["HTTP_HOST"]
       @path = env["PATH_INFO"]
       @headers = build_headers(env)
+      @key = key
 
       @digest, encoded_url = path[1..].split("/", 2).map { |part| String(part) }
 
@@ -42,7 +43,7 @@ module Camo
     end
 
     def valid_digest?
-      OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha1"), ENV["CAMORB_KEY"], destination_url) == digest
+      OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha1"), key, destination_url) == digest
     end
 
     private

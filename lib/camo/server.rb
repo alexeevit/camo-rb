@@ -16,7 +16,12 @@ module Camo
       Content-Encoding
     ].map(&:downcase)]
 
-    attr_reader :request
+    attr_reader :request, :key
+
+    def initialize(key)
+      @key = String(key)
+      raise Errors::UndefinedKeyError if @key.empty?
+    end
 
     def call(env)
       build_request(env)
@@ -58,7 +63,7 @@ module Camo
     end
 
     def build_request(env)
-      @request ||= Request.new(env)
+      @request ||= Request.new(env, key)
     end
 
     def client
