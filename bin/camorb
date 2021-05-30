@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "rack/handler/falcon"
+require_relative "../environment"
+
+host = "0.0.0.0"
+port = ENV["CAMORB_PORT"] || 9292
+
+trap("SIGINT") do
+  puts "\nExiting gracefully..."
+  exit
+end
+
+begin
+  app = Camo::Server.new(ENV["CAMORB_KEY"])
+  Rack::Handler::Falcon.run(app, host: host, port: port)
+rescue Camo::Errors::AppError => e
+  abort("Error: #{e.message}")
+end

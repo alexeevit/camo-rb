@@ -24,6 +24,4 @@ RUN bundle install
 
 COPY . .
 
-ENV CAMORB_PORT=9292
-ENV CAMORB_KEY=somekey
-CMD /usr/local/bundle/bin/rackup -o 0.0.0.0 -p $CAMORB_PORT
+CMD ["/app/bin/camorb"]
