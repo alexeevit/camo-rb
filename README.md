@@ -36,9 +36,10 @@ Use the next environment variables to configure the server:
 
 ## Tasks to do
 
-[ ] Allow use SSL/TLS certificates
-[ ] Add logging in JSON format
-[ ] Allow to customize requests and the server
-[ ] Support metrics (Prometheus)
-[ ] Allow to customize logging
+- [x] Create MVP
+- [ ] Allow use SSL/TLS certificates
+- [ ] Add logging in JSON format
+- [ ] Allow to customize requests and the server
+- [ ] Support metrics (Prometheus)
+- [ ] Allow to customize logging
 ...
