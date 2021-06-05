@@ -43,6 +43,36 @@ describe Camo::Server do
     end
   end
 
+  context "when CAMORB_TIMING_ALLOW_ORIGIN is set" do
+    before { stub_const("Camo::HeadersUtils::TIMING_ALLOW_ORIGIN", "*") }
+
+    it "adds the Timing-Allow-Origin header" do
+      mock_server("hello_world_server") do |uri|
+        get camo_url(uri)
+
+        expect(last_response).to be_ok
+        expect(last_response.headers).to include({
+          "Timing-Allow-Origin" => "*"
+        })
+      end
+    end
+  end
+
+  context "when CAMORB_HOSTNAME is set" do
+    before { stub_const("Camo::HeadersUtils::HOSTNAME", "camo.example.com") }
+
+    it "adds the Timing-Allow-Origin header" do
+      mock_server("hello_world_server") do |uri|
+        get camo_url(uri)
+
+        expect(last_response).to be_ok
+        expect(last_response.headers).to include({
+          "Camo-Host" => "camo.example.com"
+        })
+      end
+    end
+  end
+
   context "when compressed and chunked" do
     it "returns joined chunks compressed" do
       mock_server("hello_world_server", gzip: true, chunked: true) do |uri|

@@ -1,5 +1,8 @@
 module Camo
   module HeadersUtils
+    HOSTNAME = ENV.fetch("CAMORB_HOSTNAME", "unknown")
+    TIMING_ALLOW_ORIGIN = ENV.fetch("CAMORB_TIMING_ALLOW_ORIGIN", nil)
+
     REQUEST_SECURITY_HEADERS = {
       "X-Frame-Options" => "deny",
       "X-XSS-Protection" => "1; mode=block",
@@ -17,8 +20,8 @@ module Camo
 
     def default_response_headers
       RESPONSE_SECURITY_HEADERS.merge({
-        "Camo-Host" => ENV.fetch("CAMORB_HOSTNAME", "unknown"),
-        "Timing-Allow-Origin" => ENV.fetch("CAMO_TIMING_ALLOW_ORIGIN", nil)
+        "Camo-Host" => HOSTNAME,
+        "Timing-Allow-Origin" => TIMING_ALLOW_ORIGIN
       }).compact
     end
 
