@@ -1,5 +1,6 @@
 ENV["CAMORB_ENV"] = "test"
 ENV["CAMORB_KEY"] = "somekey"
+ENV["CAMORB_LOG_LEVEL"] = "fatal"
 
 require_relative "../environment"
 require "rack/test"

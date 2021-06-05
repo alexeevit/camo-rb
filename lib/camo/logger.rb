@@ -2,7 +2,7 @@ module Camo
   class Logger
     attr_reader :outpipe, :errpipe
 
-    LOG_LEVELS = ["debug", "info", "error"].freeze
+    LOG_LEVELS = ["debug", "info", "error", "fatal"].freeze
     LOG_LEVEL = (LOG_LEVELS.find { |level| level == ENV["CAMORB_LOG_LEVEL"] } || "info").freeze
 
     def initialize(outpipe, errpipe)

@@ -50,19 +50,19 @@ describe Camo::Logger do
   end
 
   describe "#error" do
-    context "when log_level is debug" do
-      before { stub_const("Camo::Logger::LOG_LEVEL", "debug") }
+    context "when log_level is error" do
+      before { stub_const("Camo::Logger::LOG_LEVEL", "error") }
 
       it "puts the message to the err pipe" do
         expect { logger.error(message) }.to output("[ERROR] #{message}\n").to_stderr
       end
     end
 
-    context "when log_level is error" do
-      before { stub_const("Camo::Logger::LOG_LEVEL", "error") }
+    context "when log_level is fatal" do
+      before { stub_const("Camo::Logger::LOG_LEVEL", "fatal") }
 
       it "puts the message to the err pipe" do
-        expect { logger.error(message) }.to output("[ERROR] #{message}\n").to_stderr
+        expect { logger.error(message) }.not_to output.to_stdout
       end
     end
   end
