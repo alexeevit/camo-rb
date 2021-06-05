@@ -51,4 +51,5 @@ The `<digest>` is a 40 character hex encoded HMAC digest generated with a shared
 - [ ] Allow to customize requests and the server
 - [ ] Support metrics (Prometheus)
 - [ ] Allow to customize logging
+
 ...
