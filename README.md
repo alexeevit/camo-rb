@@ -8,7 +8,7 @@ A camo server is a special type of image proxy that proxies non-secure images ov
 Install Camo-rb as a ruby gem:
 
 ```
-gem install camorb
+gem install camo-rb
 ```
 
 Run it:
