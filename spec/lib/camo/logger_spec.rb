@@ -13,17 +13,35 @@ describe Camo::Logger do
     end
   end
 
-  describe "#debug" do
-    context "when log_level is debug" do
-      before { stub_const("Camo::Logger::LOG_LEVEL", "debug") }
+  describe "#info" do
+    context "when log_level is info" do
+      before { stub_const("Camo::Logger::LOG_LEVEL", "info") }
 
       it "puts the message to the out pipe" do
-        expect { logger.debug(message) }.to output("#{message}\n").to_stdout
+        expect { logger.info(message) }.to output("[INFO] #{message}\n").to_stdout
       end
     end
 
     context "when log_level is error" do
       before { stub_const("Camo::Logger::LOG_LEVEL", "error") }
+
+      it "does nothing" do
+        expect { logger.info(message) }.not_to output.to_stdout
+      end
+    end
+  end
+
+  describe "#debug" do
+    context "when log_level is debug" do
+      before { stub_const("Camo::Logger::LOG_LEVEL", "debug") }
+
+      it "puts the message to the out pipe" do
+        expect { logger.debug(message) }.to output("[DEBUG] #{message}\n").to_stdout
+      end
+    end
+
+    context "when log_level is info" do
+      before { stub_const("Camo::Logger::LOG_LEVEL", "info") }
 
       it "does nothing" do
         expect { logger.debug(message) }.not_to output.to_stdout
@@ -36,7 +54,7 @@ describe Camo::Logger do
       before { stub_const("Camo::Logger::LOG_LEVEL", "debug") }
 
       it "puts the message to the err pipe" do
-        expect { logger.error(message) }.to output("#{message}\n").to_stderr
+        expect { logger.error(message) }.to output("[ERROR] #{message}\n").to_stderr
       end
     end
 
@@ -44,15 +62,7 @@ describe Camo::Logger do
       before { stub_const("Camo::Logger::LOG_LEVEL", "error") }
 
       it "puts the message to the err pipe" do
-        expect { logger.error(message) }.to output("#{message}\n").to_stderr
-      end
-    end
-
-    context "when log_level is fatal" do
-      before { stub_const("Camo::Logger::LOG_LEVEL", "fatal") }
-
-      it "does nothing" do
-        expect { logger.error(message) }.not_to output.to_stdout
+        expect { logger.error(message) }.to output("[ERROR] #{message}\n").to_stderr
       end
     end
   end
@@ -60,19 +70,19 @@ describe Camo::Logger do
   describe "#compile_output" do
     context "when message is array" do
       it "joins the array with comma" do
-        expect(logger.send(:compile_output, ["hello", "world"], {})).to eq("hello, world")
+        expect(logger.send(:compile_output, :level, ["hello", "world"], {})).to eq("[LEVEL] hello, world")
       end
     end
 
     context "when there are no params" do
       it "returns only the message" do
-        expect(logger.send(:compile_output, message, {})).to eq("Some message")
+        expect(logger.send(:compile_output, :level, message, {})).to eq("[LEVEL] Some message")
       end
     end
 
     context "when there are params" do
       it "returns the message and the params" do
-        expect(logger.send(:compile_output, message, {request: {status: 200}})).to eq('Some message | { request: { status: "200" } }')
+        expect(logger.send(:compile_output, :level, message, {request: {status: 200}})).to eq('[LEVEL] Some message | { request: { status: "200" } }')
       end
     end
   end
