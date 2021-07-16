@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "addressable"
+gem "addressable", ">= 2.8.0"
 gem "faraday"
 gem "falcon"
 gem "rack"

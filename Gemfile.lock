@@ -1,7 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    addressable (2.7.0)
+    addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     ast (2.4.2)
     async (1.29.0)
@@ -119,7 +119,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  addressable
+  addressable (>= 2.8.0)
   falcon
   faraday
   pry
@@ -131,4 +131,4 @@ DEPENDENCIES
   webrick
 
 BUNDLED WITH
-   2.2.17
+   2.2.21
